@@ -4,6 +4,7 @@ import {
   Column,
   ManyToOne,
   BaseEntity,
+
 } from "typeorm";
 import { ObjectType, Field, Int, InputType } from "type-graphql";
 import { Continent } from "./Continent";
@@ -53,6 +54,6 @@ export class NewCountryInput {
   @MaxLength(4)
   emoji: string;
 
-  @Field(() => ObjectId, { nullable: true })
-  continent?: ObjectId;
+  @Field({ nullable: true })
+  continent?: string;
 }

@@ -1,22 +1,44 @@
 services:
   backend:
-    stop_grace_period: 0s
-    build: 
+    # stop_grace_period: 0s
+    build:
       context: ./backend
       dockerfile: Dockerfile
     ports:
-      - 4000:4000
+      - 4005:4005
+    healthcheck:
+      # test: ["CMD", "echo", "hello"]
+
+      test:
+        [
+          "CMD-SHELL",
+          "curl -f http://backend:4005/graphql?query=%7B__typename%7D -H 'Apollo-Require-Preflight: true || exit 1'",
+        ]
+      interval: 10s
+      timeout: 30s
+      retries: 5
     volumes:
       - ./backend/src:/app/src
       - ./backend/countries.sqlite:/app/countries.sqlite
 
   frontend:
+    command: sh -c "npm run dev & npm run codegen"
+    depends_on:
+      backend:
+        condition: service_healthy
     environment:
       - WDS_SOCKET_HOST=127.0.0.1
       - CHOKIDAR_USEPOLLING=true
       - WATCHPACK_POLLING=true=value
-    stop_grace_period: 0s
-    build: 
+    develop:
+      watch:
+        - action: sync
+          path: ./frontend
+          target: /src
+          ignore:
+            - node_modules/
+    # stop_grace_period: 0s
+    build:
       context: ./frontend
       dockerfile: Dockerfile
     ports:
